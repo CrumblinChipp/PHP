@@ -1,5 +1,7 @@
 <?php
 session_start();
+require 'db.php';
+
 $error_username = "";
 $error_password = "";
 
@@ -13,21 +15,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($password)) {
         $error_password = "Password is required!";
     }
+
     if (empty($error_username) && empty($error_password)) {
-        if ($username === "student" && $password === "1234") {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+        $stmt->execute(['username' => $username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && $user['password'] === $password) {
             $_SESSION['logged_in'] = true;
             $_SESSION['username'] = $username;
 
             header("Location: resume.php");
             exit();
         } else {
-            // Wrong credentials
-            $error_username = "Invalid Username!";
+            $error_username = "Invalid Username";
             $error_password = "Invalid Password!";
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html>
